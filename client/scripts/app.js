@@ -56,9 +56,9 @@ var app = {
     this.clearMessages();
     
     this.fetch(function(data) {
-      console.log(data);
       _.each(data.results, function(item) {
-        $('#chats').prepend(item.text);
+        var clean = sanitizeHtml(item.text);
+        $('#chats').prepend(clean);
       });
     });
   },
