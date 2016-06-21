@@ -5,7 +5,11 @@ var app = {
   init: function() {
 
     $('#chats').on('click', '.username', function(event) {
-      console.log('on username');
+      event.preventDefault();
+      var name = this.innerHTML;
+      if (!_.contains(app.friendsList, name)) {
+        app.friendsList.push(name);
+      }
     });
 
     $('#updateusername').on('click', function(event) {
@@ -25,6 +29,7 @@ var app = {
       app.addRoom($('#newRoom').val());
       $('#newRoom').val('');
     });
+
 
 
     setInterval(this.fetch.bind(this), 2000);
@@ -64,19 +69,31 @@ var app = {
       dataType: 'json',
       success: function(data) {
         app.clearMessages();
-
         _.each(data.results, function(item) {
+          
+
           if (app.rooms.indexOf(item.roomname) === -1) {
             app.rooms.push(item.roomname);
           }
 
-          var clean = sanitizeHtml(item.text);          
-          var $newMessageUser = $('<h3 class="username" onclick="app.addFriend()">' + item.username + '</h3>');
-          var $newMessageText = $('<p>' + clean + '</p>');
+          var cleanText = sanitizeHtml(item.text);
+          var cleanUser = sanitizeHtml(item.username);          
+          var cleanRoomname = sanitizeHtml(item.roomname);          
+          var $newMessageUser = $('<h3 class="username">' + cleanUser + '</h3>');
+          
+          if (_.contains(app.friendsList, cleanUser)) {
+            var $newMessageText = $('<p><b>' + cleanText + '</b></p>');            
+          } else {
+            var $newMessageText = $('<p>' + cleanText + '</p>');                        
+          } 
+
+          var $newRoomName = $('<p>' + cleanRoomname + '</p>');
           var $entireMessage = $('<div></div>');
 
-          $entireMessage.append($newMessageUser, $newMessageText);
-          $('#chats').append($entireMessage);
+          if (item.roomname === $('#roomList').val()) {
+            $entireMessage.append($newMessageUser, $newMessageText, $newRoomName);
+            $('#chats').append($entireMessage);
+          }
 
         });
 
@@ -84,8 +101,6 @@ var app = {
         var roomListArray = _.map($('#roomList').children(), function(item) {
           return item.value;
         });
-
-        console.log($('#roomList').children()[0].value);
 
         for (var i = 0; i < app.rooms.length; i++) {
           if (!_.contains(roomListArray, app.rooms[i]) && app.rooms[i] !== null && app.rooms[i] !== undefined) {
@@ -145,6 +160,7 @@ var app = {
 
   server: 'https://api.parse.com/1/classes/messages',
   rooms: [],
+  friendsList: []
 
 };
 
