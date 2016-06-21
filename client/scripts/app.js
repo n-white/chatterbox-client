@@ -5,8 +5,28 @@ var app = {
   init: function() {
 
     $('#chats').on('click', '.username', function(event) {
+      console.log('on username');
+    });
+
+    $('#updateusername').on('click', function(event) {
+
+      event.preventDefault();
+      window.currentusername = $('#newusername').val();
+      $('#newusername').val('');
+      console.log(window.currentusername);
+    });
+
+    $('#updatemessage').on('click', function(event) {
+      console.log($('#newmessage').val()); 
+      event.preventDefault();
+      app.addMessage($('#newmessage').val());
+      $('#newmessage').val('');
 
     });
+
+  
+
+
 
 
     setInterval(this.fetch.bind(this), 1000);
@@ -70,7 +90,7 @@ var app = {
   addMessage: function(message) {
     
     var messageObj = {
-      username: 'Static Names be Static',
+      username: window.currentusername || 'Anon Panda',
       text: message,
       roomname: 'TBD'
     };
@@ -93,6 +113,9 @@ var app = {
 
 };
 
-app.init();
+$(document).ready(function() {
+  app.init();
+});
+
 
 
