@@ -3,11 +3,14 @@
 var app = {
 
   init: function() {
+
     $('#chats').on('click', '.username', function(event) {
 
     });
 
-    
+
+    setInterval(this.fetch.bind(this), 1000);
+
 
     return;
   },
@@ -29,19 +32,6 @@ var app = {
     });
   },
 
-  fetch: function(success) {
-    $.ajax({
-      url: this.server,
-      type: 'GET',
-      dataType: 'json',
-      success: success,
-      error: function (data) {
-        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-        console.error('chatterbox: Failed to send message', data);
-      },
-    });
-  },
-
   clearMessages: function() {
 
     _.each($('#chats').children(), function(item) {
@@ -50,30 +40,44 @@ var app = {
 
   },
 
+  fetch: function(success) {
+    $.ajax({
+      url: this.server,
+      type: 'GET',
+      dataType: 'json',
+      success: function(data) {
+        app.clearMessages();
+
+        _.each(data.results, function(item) {
+          var clean = sanitizeHtml(item.text);          
+          var $newMessageUser = $('<h3 class="username" onclick="app.addFriend()">' + item.username + '</h3>');
+          var $newMessageText = $('<p>' + clean + '</p>');
+          var $entireMessage = $('<div></div>');
+
+          $entireMessage.append($newMessageUser, $newMessageText);
+          $('#chats').append($entireMessage);
+
+        });
+        console.log('so fetching!');
+      },
+      error: function (data) {
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+        console.error('chatterbox: Failed to send message', data);
+      },
+    });
+  },  
+
   addMessage: function(message) {
     
     var messageObj = {
-      username: window.newName,
+      username: 'Static Names be Static',
       text: message,
       roomname: 'TBD'
     };
+    //console.log(window.newName);
 
-    this.send(messageObj);
-
-    this.clearMessages();
-    
-    this.fetch(function(data) {
-      _.each(data.results, function(item) {
-        var clean = sanitizeHtml(item.text);
-        
-        var $newMessageUser = $('<p class="username" onclick="app.addFriend()">' + item.username + '</p>');
-        var $newMessageText = $('<p>' + clean + '</p>');
-        var $entireMessage = $('<div></div>');
-        $entireMessage.append($newMessageUser, $newMessageText);
-
-        $('#chats').append($entireMessage);
-      });
-    });
+    this.send(messageObj);   
+    this.fetch();
 
   },
 
@@ -88,5 +92,7 @@ var app = {
   server: 'https://api.parse.com/1/classes/messages'
 
 };
+
+app.init();
 
 
